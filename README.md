@@ -1,5 +1,5 @@
 # clk_commands
-my set of bash commands for click-project: https://github.com/Konubinix/click-project
+my set of commands for click-project: https://github.com/Konubinix/click-project
 
 ## Setup
 ```bash

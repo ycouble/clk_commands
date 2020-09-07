@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 import datetime
 import os.path
+import subprocess
 from contextlib import contextmanager
 
 import pandas as pd
 from click_project.decorators import command, argument, option, group
 
 
-DACTYLO_FILEPATH=os.path.expanduser("~/public_data/dactylo.csv")
-DACTYLO_COLS=["date", "source", "wpm"]
+DACTYLO_FILEPATH = os.path.expanduser("~/public_data/dactylo.csv")
+DACTYLO_COLS = ["date", "source", "wpm"]
+
 
 @contextmanager
 def open_df_from_file(path: str):
@@ -20,7 +22,6 @@ def open_df_from_file(path: str):
         yield df
     finally:
         df.to_csv(path, index=False)
-
 
 
 @group()
@@ -54,3 +55,16 @@ def add(wpm, date):
     """ add a record for fastfingers """
     with open_df_from_file(DACTYLO_FILEPATH) as df:
         df.loc[df.shape[0] + 1] = {"date": date, "source": "fastfingers", "wpm": wpm}
+
+
+@dactylo.command()
+def send():
+    """ Send dactylo data to server """
+    today = datetime.date.today()
+    directory = os.path.dirname(DACTYLO_FILEPATH)
+    subprocess.call(f"git add -u".split(" "), cwd=directory)
+    subprocess.call(
+        f"git commit -m".split(" ") + [f"'dactylo stats {today}'"], cwd=directory
+    )
+    subprocess.call(f"git pull --rebase".split(" "), cwd=directory)
+    subprocess.call(f"git push".split(" "), cwd=directory)

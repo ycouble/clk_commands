@@ -3,11 +3,14 @@ import datetime
 import os.path
 import sys
 import subprocess
+import logging
 from contextlib import contextmanager
 
 import pandas as pd
 from click_project.decorators import command, argument, option, group, flag
 
+
+LOGGER = logging.getLogger(__name__)
 
 DACTYLO_FILEPATH = os.path.expanduser("~/public_data/dactylo.csv")
 DACTYLO_COLS = ["date", "source", "wpm"]
@@ -19,18 +22,21 @@ def open_df_from_file(path: str):
         df = pd.read_csv(path, parse_dates=True)
     else:
         df = pd.DataFrame({}, columns=DACTYLO_COLS)
-    old_hash = pd.util.hash_pandas_object(df)
+    # Sum to support change of # of columns
+    old_hash = pd.util.hash_pandas_object(df.transpose()).sum()
     try:
         yield df
     finally:
         # Write to file only if df has changed
-        if not (pd.util.hash_pandas_object(df) == old_hash).all():
+        new_hash = pd.util.hash_pandas_object(df.transpose()).sum()
+        if not (new_hash == old_hash).all():
+            LOGGER.info("Dataframe has change, write to disk")
             df.to_csv(path, index=False)
 
 
 @group()
 def dactylo():
-    """ dactylo related commands """
+    """ touch typing related commands """
 
 
 @dactylo.group()
@@ -67,23 +73,23 @@ def plot(generate_only):
     Plot the progress over time and optionally open it with the default 
     image viewer
     """
-    import matplotlib.pyplot as plt
-    import seaborn as sns
-    sns.set()
     def default_open(something_to_open):
         """Open given file with default user program."""
         if sys.platform.startswith('linux'):
+            LOGGER.info("Calling xdg-open")
             subprocess.call(['xdg-open', something_to_open])
         elif sys.platform.startswith('darwin'):
+            LOGGER.info("Calling open")
             subprocess.call(['open', something_to_open])
         elif sys.platform.startswith('win'):
+            LOGGER.info("Calling start")
             subprocess.call(['start', something_to_open], shell=True)
     with open_df_from_file(DACTYLO_FILEPATH) as df:
         data = {}
         for source in df["source"].unique():
             data[source] = df.loc[df["source"] == source, :]
             print(data[source])
-        // TODO
+        # TODO
 
 
 
@@ -97,7 +103,9 @@ def send():
     subprocess.call(
         f"git commit -m".split(" ") + [f"'dactylo stats {today}'"], cwd=directory
     )
+    LOGGER.info("git pull")
     subprocess.call(f"git pull --rebase".split(" "), cwd=directory)
+    LOGGER.info("git push")
     subprocess.call(f"git push".split(" "), cwd=directory)
 
 
@@ -105,6 +113,7 @@ def send():
 def pull():
     """ Pull dactylo data from server """
     directory = os.path.dirname(DACTYLO_FILEPATH)
+    LOGGER.info("git pull")
     subprocess.call(f"git pull --rebase".split(" "), cwd=directory)
 
 
@@ -112,7 +121,9 @@ def pull():
 def init():
     """ Pull dactylo data from server """
     directory = os.path.dirname(os.path.dirname(DACTYLO_FILEPATH))
+    LOGGER.info("cloning remote repo for dactylo data")
     subprocess.call(f"git clone git@github.com:ycouble/public_data.git".split(" "), cwd=directory)
 
 # TODO LIST:
 # - dactylo undo
+# - dactylo ff/kbr start (start browser with url)

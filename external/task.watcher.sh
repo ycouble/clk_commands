@@ -10,6 +10,7 @@ Can be filtered by project.
 O:--project:str:The project to display
 EOF
 }
+#O:--project:[$(task _projects | tr '\n' ',' | sed -E 's:([^,]*),:"\1", :g' | sed 's:, $::')]:The project to display
 
 if [ $# -gt 0 ] && [ "$1" == "--help" ]
 then

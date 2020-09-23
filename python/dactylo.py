@@ -6,6 +6,7 @@ import subprocess
 import logging
 from contextlib import contextmanager
 
+import click
 import pandas as pd
 from click_project.decorators import command, argument, option, group, flag
 
@@ -36,35 +37,18 @@ def open_df_from_file(path: str):
 
 @group()
 def dactylo():
-    """ touch typing related commands """
+    """ touch typing training related commands """
 
 
-@dactylo.group()
-def keybr():
-    """ keybr related commands """
-
-
-@keybr.command()
+@dactylo.command()
+@argument("source", help="source of the record", type=click.Choice(["fastfingers", "keybr"])) 
 @argument("wpm", help="words per minute")
 @option("--date", help="date of the record", default=datetime.datetime.today())
-def add(wpm, date):
-    """ add a record for keybr """
+def add(source, wpm, date):
+    """ add a record (commands group) """
     with open_df_from_file(DACTYLO_FILEPATH) as df:
-        df.loc[df.shape[0] + 1] = {"date": date, "source": "keybr", "wpm": wpm}
+        df.loc[df.shape[0] + 1] = {"date": date, "source": source, "wpm": wpm}
 
-
-@dactylo.group()
-def fastfingers():
-    """ fastfingers related commands """
-
-
-@fastfingers.command()
-@argument("wpm", help="words per minute")
-@option("--date", help="date of the record", default=datetime.datetime.today())
-def add(wpm, date):
-    """ add a record for fastfingers """
-    with open_df_from_file(DACTYLO_FILEPATH) as df:
-        df.loc[df.shape[0] + 1] = {"date": date, "source": "fastfingers", "wpm": wpm}
 
 @dactylo.command()
 @flag("--generate-only", help="do not open the plot", default=False)

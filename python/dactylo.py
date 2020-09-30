@@ -3,15 +3,15 @@ import datetime
 import os.path
 import sys
 import subprocess
-import logging
 from contextlib import contextmanager
 
 import click
 import pandas as pd
+from click_project.log import get_logger
 from click_project.decorators import command, argument, option, group, flag
 
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = getLogger(__name__)
 
 DACTYLO_FILEPATH = os.path.expanduser("~/public_data/dactylo.csv")
 DACTYLO_COLS = ["date", "source", "wpm"]

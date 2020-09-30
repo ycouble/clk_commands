@@ -77,3 +77,10 @@ def status(ctx):
             LOGGER.info("")
             LOGGER.info(f"==== GIT STATUS for {path} ====")
             subprocess.call(["git", "status", "-s"], cwd=path)
+
+# TODO List:
+# - give a name to the repos
+# - commit and push on a named repo
+# - commit with a message on a list of named repos
+# - fetch all without rebasing
+# - pull a list of named repos

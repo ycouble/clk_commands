@@ -11,7 +11,7 @@ from click_project.log import get_logger
 from click_project.decorators import command, argument, option, group, flag
 
 
-LOGGER = getLogger(__name__)
+LOGGER = get_logger(__name__)
 
 DACTYLO_FILEPATH = os.path.expanduser("~/public_data/dactylo.csv")
 DACTYLO_COLS = ["date", "source", "wpm"]

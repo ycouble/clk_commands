@@ -78,6 +78,14 @@ def status(ctx):
             LOGGER.info(f"==== GIT STATUS for {path} ====")
             subprocess.call(["git", "status", "-s"], cwd=path)
 
+@git.command()
+@click.pass_context
+def edit(ctx):
+    """ Edit the config file manually """ 
+    config = ctx.obj["config"]
+    subprocess.call(["vim", config])
+
+
 # TODO List:
 # - give a name to the repos
 # - commit and push on a named repo

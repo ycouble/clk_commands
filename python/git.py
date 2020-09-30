@@ -4,7 +4,7 @@ import subprocess
 import sys
 
 import click
-from click_project.decorators import group, command, argument
+from click_project.decorators import group, command, argument, option
 from click_project.log import get_logger
 
 
@@ -13,21 +13,29 @@ CONFIG_PATH = os.path.expanduser("~/.local/share/clk/git.txt")
 
 
 @group()
-def git():
+@option("--config", help="git tracking file path file path", default=CONFIG_PATH)
+@click.pass_context
+def git(ctx, config):
     """ Git repositories related commands """
-    LOGGER.debug("creating config file if it doesn't exist")
+    # Context enrichment
+    ctx.ensure_object(dict)
+    ctx.obj["config"] = config
+    # Ensure the config file and its directory exist
+    LOGGER.debug(f"Creating config file {config} if it doesn't exist")
     try:
-        os.makedirs(os.path.dirname(CONFIG_PATH))
+        os.makedirs(os.path.dirname(config))
     except FileExistsError:
         pass
-    if not os.path.isfile(CONFIG_PATH):
-        with open(CONFIG_PATH, "a+"):
+    if not os.path.isfile(config):
+        with open(config, "a+"):
             pass
 
 @git.command()
 @argument("path", help="The path to a git repository")
-def add(path):
+@click.pass_context
+def add(ctx, path):
     """ Add a git repository to the command git tracking """
+    config = ctx.obj["config"]
     path = os.path.abspath(os.path.expanduser(path))
     if not os.path.isdir(path):
         LOGGER.error(f"Path {path} is not a directory")
@@ -41,26 +49,30 @@ def add(path):
     if ret:
         LOGGER.error(f"Directory {path} is not a git repository")
         sys.exit(1)
-    with open(CONFIG_PATH, "r") as paths:
+    with open(config, "r") as paths:
         existing_paths = paths.readlines()
         if path in [p.replace('\n', '') for p in existing_paths]:
             LOGGER.warning(f"Path {path} already in tracked repositories")
             return
-    with open(CONFIG_PATH, "a+") as f:
+    with open(config, "a+") as f:
         LOGGER.info(f"Adding path {path} to the tracked repositories")
         f.write(path + "\r\n")
 
 @git.command()
-def list():
+@click.pass_context
+def list(ctx):
     """ List tracked git repositories """
-    with open(CONFIG_PATH, "r") as f:
+    config = ctx.obj["config"]
+    with open(config, "r") as f:
         for path in f.readlines():
             print(path)
 
 @git.command()
-def status():
+@click.pass_context
+def status(ctx):
     """ Get the git status for each tracked git repository """
-    with open(CONFIG_PATH, "r") as f:
+    config = ctx.obj["config"]
+    with open(config, "r") as f:
         for path in [p.replace('\n', '') for p in f.readlines()]:
             LOGGER.info("")
             LOGGER.info(f"==== GIT STATUS for {path} ====")

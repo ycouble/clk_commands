@@ -58,9 +58,9 @@ def add(ctx, path):
         LOGGER.info(f"Adding path {path} to the tracked repositories")
         f.write(path + "\r\n")
 
-@git.command()
+@git.command(name="list")
 @click.pass_context
-def list(ctx):
+def list_git_repos(ctx):
     """ List tracked git repositories """
     config = ctx.obj["config"]
     with open(config, "r") as f:

@@ -32,7 +32,18 @@ show() {
 }
 
 show
-inotifywait -q -r -m -e modify ~/.task/ | \
+
+# Make sure watching function is available
+if ! command -v fswatch &> /dev/null
+then
+    clk log -l warning \
+    "Command fswatch does not seem to be installed,"\
+    "watcher@sh cannot refresh automatically"
+    exit 0
+fi
+
+#OLD: only work on linux inotifywait -q -r -m -e modify ~/.task/ | \
+fswatch -o --event=Updated ~/.task/ | \
   while read _path _ _file; do  
     show
   done;

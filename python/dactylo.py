@@ -41,7 +41,9 @@ def dactylo():
 
 
 @dactylo.command()
-@argument("source", help="source of the record", type=click.Choice(["fastfingers", "keybr"])) 
+@argument(
+    "source", help="source of the record", type=click.Choice(["fastfingers", "keybr"])
+)
 @argument("wpm", help="words per minute")
 @option("--date", help="date of the record", default=datetime.datetime.today())
 def add(source, wpm, date):
@@ -54,28 +56,28 @@ def add(source, wpm, date):
 @flag("--generate-only", help="do not open the plot", default=False)
 def plot(generate_only):
     """
-    Plot the progress over time and optionally open it with the default 
+    Plot the progress over time and optionally open it with the default
     image viewer
     """
+
     def default_open(something_to_open):
         """Open given file with default user program."""
-        if sys.platform.startswith('linux'):
+        if sys.platform.startswith("linux"):
             LOGGER.info("Calling xdg-open")
-            subprocess.call(['xdg-open', something_to_open])
-        elif sys.platform.startswith('darwin'):
+            subprocess.call(["xdg-open", something_to_open])
+        elif sys.platform.startswith("darwin"):
             LOGGER.info("Calling open")
-            subprocess.call(['open', something_to_open])
-        elif sys.platform.startswith('win'):
+            subprocess.call(["open", something_to_open])
+        elif sys.platform.startswith("win"):
             LOGGER.info("Calling start")
-            subprocess.call(['start', something_to_open], shell=True)
+            subprocess.call(["start", something_to_open], shell=True)
+
     with open_df_from_file(DACTYLO_FILEPATH) as df:
         data = {}
         for source in df["source"].unique():
             data[source] = df.loc[df["source"] == source, :]
             print(data[source])
         # TODO
-
-
 
 
 @dactylo.command()
@@ -106,7 +108,10 @@ def init():
     """ Pull dactylo data from server """
     directory = os.path.dirname(os.path.dirname(DACTYLO_FILEPATH))
     LOGGER.info("cloning remote repo for dactylo data")
-    subprocess.call(f"git clone git@github.com:ycouble/public_data.git".split(" "), cwd=directory)
+    subprocess.call(
+        f"git clone git@github.com:ycouble/public_data.git".split(" "), cwd=directory
+    )
+
 
 # TODO LIST:
 # - dactylo undo

@@ -30,6 +30,7 @@ def git(ctx, config):
         with open(config, "a+"):
             pass
 
+
 @git.command()
 @argument("path", help="The path to a git repository")
 @click.pass_context
@@ -51,12 +52,13 @@ def add(ctx, path):
         sys.exit(1)
     with open(config, "r") as paths:
         existing_paths = paths.readlines()
-        if path in [p.replace('\n', '') for p in existing_paths]:
+        if path in [p.replace("\n", "") for p in existing_paths]:
             LOGGER.warning(f"Path {path} already in tracked repositories")
             return
     with open(config, "a+") as f:
         LOGGER.info(f"Adding path {path} to the tracked repositories")
         f.write(path + "\r\n")
+
 
 @git.command(name="list")
 @click.pass_context
@@ -67,21 +69,23 @@ def list_git_repos(ctx):
         for path in f.readlines():
             print(path)
 
+
 @git.command()
 @click.pass_context
 def status(ctx):
     """ Get the git status for each tracked git repository """
     config = ctx.obj["config"]
     with open(config, "r") as f:
-        for path in [p.replace('\n', '') for p in f.readlines()]:
+        for path in [p.replace("\n", "") for p in f.readlines()]:
             LOGGER.info("")
             LOGGER.info(f"==== GIT STATUS for {path} ====")
             subprocess.call(["git", "status", "-s"], cwd=path)
 
+
 @git.command()
 @click.pass_context
 def edit(ctx):
-    """ Edit the config file manually """ 
+    """ Edit the config file manually """
     config = ctx.obj["config"]
     subprocess.call(["vim", config])
 

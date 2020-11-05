@@ -64,15 +64,16 @@ def list_():
 
 
 @note.command()
-@argument("name", help="The note to print")
+@argument("name", help="The note to print", type=click.Choice(EXISTING_NOTES))
 def cat(name):
+    """Displays an in terminal markdown impression of the note"""
     notepath = NOTES_FOLDER_PATH.joinpath(f"{name}.md")
     if name not in EXISTING_NOTES:
         LOGGER.error(f"No note by the name {name}")
         return
     if subprocess.call(
         "command -v mdv".split(" "),
-        sdtdout=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     ):
         LOGGER.error(

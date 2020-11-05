@@ -13,7 +13,9 @@ from click_project.log import get_logger
 LOGGER = get_logger(__name__)
 NOTES_FOLDER_PATH = Path("~/notes").expanduser()
 EXISTING_NOTES = [
-    note.name[:-3] for note in NOTES_FOLDER_PATH.iterdir() if note.name.endswith(".md")
+    _note.name[:-3]
+    for _note in NOTES_FOLDER_PATH.iterdir()
+    if _note.name.endswith(".md")
 ]
 
 
@@ -51,11 +53,30 @@ def new(name):
 def list_():
     """List notes """
     root_categories = defaultdict(list)
-    for note in NOTES_FOLDER_PATH.iterdir():
-        if not (note.name.endswith(".md") or note.name.endswith(".txt")):
+    for _note in NOTES_FOLDER_PATH.iterdir():
+        if not (_note.name.endswith(".md") or _note.name.endswith(".txt")):
             continue
-        root_categories[note.name.split(".")[0]].append(note)
+        root_categories[_note.name.split(".")[0]].append(_note)
     for cat, notes in root_categories.items():
         print(f"--  {cat}:")
-        for note in notes:
-            print(f"  {note.as_posix()}")
+        for _note in notes:
+            print(f"  {_note.as_posix()}")
+
+
+@note.command()
+@argument("name", help="The note to print")
+def cat(name):
+    notepath = NOTES_FOLDER_PATH.joinpath(f"{name}.md")
+    if name not in EXISTING_NOTES:
+        LOGGER.error(f"No note by the name {name}")
+        return
+    if subprocess.call(
+        "command -v mdv".split(" "),
+        sdtdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    ):
+        LOGGER.error(
+            "You need the mdv command to be able to cat a note.\n"
+            "Use `pip[x] install mdv` to install it."
+        )
+    subprocess.call(["mdv", notepath.as_posix()])

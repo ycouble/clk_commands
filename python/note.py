@@ -19,6 +19,23 @@ EXISTING_NOTES = [
 ]
 
 
+class Suggestion(click.Choice):
+    """Allow all choices + any other value"""
+
+    def convert(self, value, param, ctx):
+        return value
+
+    def get_metavar(self, param):
+        return "[{}|...]".format(
+            "|".join(list(self.choices)[: max(3, len(self.choices))])
+        )
+
+    def get_missing_message(self, param):
+        return "Either choose from:\n\t{}." " or provide a new one".format(
+            ",\n\t".join(self.choices)
+        )
+
+
 def default_open(something_to_open):
     """Open given file with default user program."""
     if sys.platform.startswith("linux"):
@@ -38,7 +55,9 @@ def note():
 
 
 @note.command()
-@argument("name", help="The name of the new note.", type=click.Choice(EXISTING_NOTES))
+@argument(
+    "name", help="The name of the note to create/edit.", type=Suggestion(EXISTING_NOTES)
+)
 def new(name):
     """Create or open a note with the given name """
     notepath = NOTES_FOLDER_PATH.joinpath(f"{name}.md")

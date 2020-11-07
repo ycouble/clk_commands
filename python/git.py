@@ -70,7 +70,7 @@ def list_git_repos(ctx):
             print(path)
 
 
-@git.command()
+@git.command(name="st")
 @click.pass_context
 def status(ctx):
     """ Get the git status for each tracked git repository """
